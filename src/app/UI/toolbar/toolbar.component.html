@@ -1,0 +1,13 @@
+<mat-toolbar color="primary">
+  <section class="container">
+    <span>Converter</span>
+    @if(courses$ | async; as courses) {
+    <span>
+      @for (course of courses; track $index) {
+      {{ course.conversion_rate | currency : course.base_code }}
+      }
+    </span>
+
+    }
+  </section>
+</mat-toolbar>
