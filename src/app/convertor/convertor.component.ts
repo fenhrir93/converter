@@ -4,7 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { distinctUntilChanged } from 'rxjs';
+import { take } from 'rxjs';
 import { HttpService } from '../services/http.service';
 import { Currency } from '../types/Currency.type';
 @Component({
@@ -30,27 +30,26 @@ export class ConvertorComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.getExchangeValue();
+    this.setConversionAmount();
   }
 
-  getExchangeValue() {
+  setConversionAmount() {
+    const { baseCurrency, targetCurrency, currencyAmount } =
+      this.formGroup.value;
+
     this.httpService
-      .getExchangeValue(
-        this.formGroup.value.baseCurrency,
-        this.formGroup.value.targetCurrency,
-        this.formGroup.value.currencyAmount
-      )
-      .pipe(distinctUntilChanged())
-      .subscribe((value) => {
+      .getExchangeValue(baseCurrency, targetCurrency, currencyAmount)
+      .pipe(take(1))
+      .subscribe(({ conversion_result }) => {
         this.formGroup.patchValue({
-          amount: value.conversion_result.toFixed(2),
+          amount: conversion_result.toFixed(2),
         });
       });
   }
 
   private getFormGroup() {
     return this.fb.group({
-      amount: [1],
+      amount: [{ value: '', disabled: true }],
       currencyAmount: [100],
       baseCurrency: ['USD'],
       targetCurrency: ['EUR'],
